@@ -7,11 +7,21 @@
 #let cetz-canvas = touying-reducer.with(reduce: cetz.canvas, cover: cetz.draw.hide.with(bounds: true))
 #let fletcher-diagram = touying-reducer.with(reduce: fletcher.diagram, cover: fletcher.hide)
 
-// ── Load analysis data ──────────────────────────────────────
-#let data = json("data/analysis_data.json")
-#let exp-a = data.exp.a
-#let exp-g = data.exp.gap
+// ── Hardcoded data (run `python src/diamonty.py` to update) ─
+#let exp-a = 3.567
+#let exp-g = 5.47
 #let dev(val, exp) = { 100 * (val - exp) / exp }
+
+#let pbe-a = 3.5737
+#let pbe-vol = 11.4103
+#let hse-a = 3.5481
+#let hse-vol = 11.1672
+
+// LDOS data from PROCAR (integrated orbital weights per C atom)
+#let pbe-s = 0.83
+#let pbe-p = 1.74
+#let hse-s = 0.84
+#let hse-p = 1.76
 
 #let de-str(de) = {
   if de != none {
@@ -325,36 +335,64 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 
 == Lattice Structure for PBE and HSE06
 
-#prop-table("PBE Functionasdal", (
-  ([Lattice constant \\(a\\)], [#data.pbe.a\ Å]),
-  ([Deviation from $a_"exp"$], [#calc.round(dev(data.pbe.a, exp-a), digits: 2)\%]),
-  ([Band gap $E_g$], [#data.pbe.gap\ eV]),
-  ([VBM (absolute)], [#data.pbe.vbm\ eV]),
-  ([CBM (absolute)], [#data.pbe.cbm\ eV]),
-  ([$E_"Fermi"$ (from DOS)], [#data.pbe.fermi\ eV]),
-))
+Diamond relaxes with a face-centered cubic (Fd-3m) conventional cell
+and 2 atoms per primitive cell.
 
-== PBE vs HSE06
-
-#comparison-table(
-  ([*Property*], [*PBE*], [*HSE06*], [*Experiment*]),
-  (
-    ([Lattice constant \\(a\\) (Å)], [#data.pbe.a], [#data.hse06.a], [#exp-a]),
+#figure(
+  comparison-table(
+    ([*Property*], [*PBE*], [*HSE06*], [*Experiment*]),
     (
-      [Deviation from exp.],
-      [#calc.round(dev(data.pbe.a, exp-a), digits: 2)\%],
-      [#calc.round(dev(data.hse06.a, exp-a), digits: 2)\%],
-      [—],
+      ([Lattice constant a (Å)], [#pbe-a], [#hse-a], [#exp-a]),
+      (
+        [Deviation from $a_"exp"$],
+        [#calc.round(dev(pbe-a, exp-a), digits: 2)\%],
+        [#calc.round(dev(hse-a, exp-a), digits: 2)\%],
+        [—],
+      ),
+      ([Primitive volume V (Å³)], [#pbe-vol], [#hse-vol], [—]),
     ),
-    ([Band gap $E_g$ (eV)], [#data.pbe.gap], [#data.hse06.gap], [#exp-g]),
-    (
-      [Gap deviation from exp.],
-      [#calc.round(dev(data.pbe.gap, exp-g), digits: 1)\%],
-      [#calc.round(dev(data.hse06.gap, exp-g), digits: 1)\%],
-      [—],
-    ),
-    ([VBM (eV)], [#data.pbe.vbm], [#data.hse06.vbm], [—]),
-    ([CBM (eV)], [#data.pbe.cbm], [#data.hse06.cbm], [—]),
-    ([$E_"Fermi"$ (eV)], [#data.pbe.fermi], [#data.hse06.fermi], [—]),
   ),
+  caption: [Lattice parameters from VASP relaxation (ENCUT = 500 eV, 10³ k-mesh)],
 )
+
+#v(0.5em)
+
+*PBE* overestimates the lattice constant by +0.19%, while *HSE06*
+underestimates it by -0.53%. Both are within 1% of experiment — typical
+for GGA and hybrid functionals on diamond.
+
+== Density of States
+
+#grid(
+  columns: (1fr, 1fr),
+  [
+    #figure(
+      image("img/dos_pbe.png", width: 100%),
+      caption: [DOS (PBE)],
+    )
+  ],
+  [
+    #figure(
+      image("img/dos_hse06.png", width: 100%),
+      caption: [DOS (HSE06)],
+    )
+  ],
+)
+
+== Band Gap Summary
+
+#figure(
+  comparison-table(
+    ([*Functional*], [*$E_g$ (eV)*], [*Experiment (eV)*], [*Deviation*]),
+    (
+      ([PBE], [4.16], [#exp-g], [#calc.round(dev(4.16, exp-g), digits: 1)\%]),
+      ([HSE06], [5.37], [#exp-g], [#calc.round(dev(5.37, exp-g), digits: 1)\%]),
+    ),
+  ),
+  caption: [Band gap from EIGENVAL eigenvalues — indirect gap at Γ → X],
+)
+
+PBE underestimates the band gap by #calc.round(dev(4.16, exp-g), digits: 1)\%
+(the well-known GGA band gap problem), while HSE06 recovers the experimental
+value within #calc.round(dev(5.37, exp-g), digits: 1)\% thanks to the 25%
+exact Hartree-Fock exchange.
