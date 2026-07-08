@@ -278,7 +278,7 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 
 = Plotting of the data for Diamond
 
-== Encut
+== Energy Cutoff for the plane-wave basis and k mesh
 
 #grid(
   columns: (1fr, 1fr),
@@ -296,7 +296,7 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   ],
 )
 
-== Energy Cut
+== Energy Cutoff
 
 #let encut-rows = data.encut_table.map(row => ([#row.encut], [#row.e0], [#de-str(row.de)]))
 
@@ -304,7 +304,7 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   convergence-table(
     ([*ENCUT (eV)*], [*$E_0$ (eV)*], [*$|\\Delta E|$ (meV)*]),
     encut-rows,
-    highlight: (3,),
+    highlight: (2,),
   ),
   caption: [Energy convergence as a function of ENCUT],
 )
@@ -323,7 +323,7 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 )
 
 
-== Red Parameters for PBE and HSE06
+== Lattice Structure for PBE and HSE06
 
 #prop-table("PBE Functionasdal", (
   ([Lattice constant \\(a\\)], [#data.pbe.a\ Å]),

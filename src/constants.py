@@ -4,8 +4,17 @@ BASE = Path(__file__).parent.parent
 
 DATA = BASE / "data"
 CUTOFF_DIRS = DATA / "convergence" / "cutoff"
+KDENSITY_DIRS = DATA / "convergence" / "kdensity"
+
+PBE_RELAX = DATA / "relax" / "PBE" / "RELAX_CONTCAR"
+HSE06_RELAX = DATA / "relax" / "HSE06" / "RELAX_CONTCAR"
 
 cutoff_dirs_pbe = [path for path in CUTOFF_DIRS.glob("*") if path.is_dir()]
+kdensity_dirs_pbe = [path for path in KDENSITY_DIRS.glob("*") if path.is_dir()]
+
+# ── DOS directories ────────────────────────────────────────
+PBE_DOS_DIR = DATA / "dos" / "PBE"
+HSE06_DOS_DIR = DATA / "dos" / "HSE06"
 
 # ── Experimental references ─────────────────────────────────
 # Diamond, cubic (Fd-3m), 2 atoms/primitive cell.
