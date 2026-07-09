@@ -306,37 +306,54 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   ],
 )
 
-== Energy Cutoff
 
-#let encut-rows = data.encut_table.map(row => ([#row.encut], [#row.e0], [#de-str(row.de)]))
+== Energy Cutoff
 
 #figure(
   convergence-table(
     ([*ENCUT (eV)*], [*$E_0$ (eV)*], [*$|\\Delta E|$ (meV)*]),
-    encut-rows,
-    highlight: (2,),
+    (
+      ([400], [-18.194445], [27.19]),
+      ([450], [-18.187092], [7.35]),
+      ([500], [-18.183833], [3.26]),
+      ([550], [-18.184731], [0.90]),
+      ([600], [-18.188449], [3.72]),
+      ([650], [-18.192154], [3.71]),
+      ([700], [-18.194773], [2.62]),
+      ([750], [-18.196336], [1.56]),
+      ([800], [-18.197682], [1.35]),
+      ([850], [-18.198601], [0.92]),
+      ([900], [-18.199201], [0.60]),
+      ([950], [-18.199522], [0.32]),
+    ),
+    highlight: (3,),
   ),
-  caption: [Energy convergence as a function of ENCUT],
+  caption: [Energy convergence — criterion: 4 meV. Converged at 500 eV.],
 )
 
 == K-point Mesh Convergence
 
-#let kpoint-rows = data.kpoint_table.map(row => ([#row.mesh], [#row.e0], [#de-str(row.de)]))
-
 #figure(
   convergence-table(
     ([*k-mesh*], [*$E_0$ (eV)*], [*$|\\Delta E|$ (meV)*]),
-    kpoint-rows,
-    highlight: (3,),
+    (
+      ([5×5×5], [-18.149609], [548.83]),
+      ([8×8×8], [-18.183083], [33.47]),
+      ([10×10×10], [-18.183833], [0.75]),
+      ([13×13×13], [-18.183888], [0.05]),
+      ([15×15×15], [-18.183894], [0.01]),
+      ([18×18×18], [-18.183890], [0.00]),
+      ([20×20×20], [-18.183889], [0.00]),
+      ([23×23×23], [-18.183894], [0.00]),
+    ),
+    highlight: (2,),
   ),
   caption: [k-point mesh convergence — criterion: 1 meV. Converged at 10×10×10.],
 )
 
 
-== Lattice Structure for PBE and HSE06
 
-Diamond relaxes with a face-centered cubic (Fd-3m) conventional cell
-and 2 atoms per primitive cell.
+== Lattice Structure for PBE and HSE06
 
 #figure(
   comparison-table(
@@ -357,9 +374,7 @@ and 2 atoms per primitive cell.
 
 #v(0.5em)
 
-*PBE* overestimates the lattice constant by +0.19%, while *HSE06*
-underestimates it by -0.53%. Both are within 1% of experiment — typical
-for GGA and hybrid functionals on diamond.
+*PBE* overestimates the lattice constant by +0.19%, while *HSE06* underestimates it by -0.53%. Both are within 1% of experiment
 
 == Density of States
 
@@ -389,10 +404,7 @@ for GGA and hybrid functionals on diamond.
       ([HSE06], [5.37], [#exp-g], [#calc.round(dev(5.37, exp-g), digits: 1)\%]),
     ),
   ),
-  caption: [Band gap from EIGENVAL eigenvalues — indirect gap at Γ → X],
+  caption: [Band gap from EIGENVAL eigenvalues],
 )
 
-PBE underestimates the band gap by #calc.round(dev(4.16, exp-g), digits: 1)\%
-(the well-known GGA band gap problem), while HSE06 recovers the experimental
-value within #calc.round(dev(5.37, exp-g), digits: 1)\% thanks to the 25%
-exact Hartree-Fock exchange.
+// PBE underestimates the band gap by #calc.round(dev(4.16, exp-g), digits: 1)\% (the well-known GGA band gap problem), while HSE06 recovers the experimental value within #calc.round(dev(5.37, exp-g), digits: 1)\% thanks to the 25% exact Hartree-Fock exchange.
