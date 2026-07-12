@@ -16,6 +16,18 @@ kdensity_dirs_pbe = [path for path in KDENSITY_DIRS.glob("*") if path.is_dir()]
 PBE_DOS_DIR = DATA / "dos" / "PBE"
 HSE06_DOS_DIR = DATA / "dos" / "HSE06"
 
+# ── Band structure ─────────────────────────────────────────
+_VASP = BASE.parent / "diamonty" / "4.Properties_of_Diamond" / "vasp"
+PBE_BAND = _VASP / "PBE" / "band" / "vasprun.xml"
+HSE06_BAND = _VASP / "HSE06" / "band" / "vasprun.xml"
+
+# ── Supercell convergence (NV center formation energy) ─────
+SUPERCELL_CONV = (
+    BASE.parent / "diamonty" / "5.Diagramas_Kohn-Sham" / "Supercell_convergence"
+)
+MU_C = -9.092944955  # elemental chemical potential, C
+MU_N = -8.320881190  # elemental chemical potential, N
+
 # ── Experimental references ─────────────────────────────────
 # Diamond, cubic (Fd-3m), 2 atoms/primitive cell.
 # Lattice constant: 3.56683 Å at 300 K, rounded to 3.567 Å.
