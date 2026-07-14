@@ -240,10 +240,10 @@ class Diamonty:
         ax.tick_params(labelsize=8)
         for label in ax.get_xticklabels():
             label.set_fontsize(8)
-        ax.legend(fontsize=8, loc='upper right')
+        ax.legend(fontsize=8, loc="upper right")
 
         fig.tight_layout(pad=0.5)
-        fig.savefig(f"slides/img/band_{self.config.functional.lower()}.pdf")
+        fig.savefig(PLOTS_SLIDE / f"band_{self.config.functional}.pdf")
         return fig
 
     def formation_energy(self):
