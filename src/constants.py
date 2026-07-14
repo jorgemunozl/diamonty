@@ -2,6 +2,8 @@ from pathlib import Path
 
 BASE = Path(__file__).parent.parent
 
+PLOTS_SLIDE = BASE / "slides" / "img"
+
 DATA = BASE / "data"
 CUTOFF_DIRS = DATA / "convergence" / "cutoff"
 KDENSITY_DIRS = DATA / "convergence" / "kdensity"

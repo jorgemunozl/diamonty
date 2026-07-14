@@ -394,6 +394,30 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   ],
 )
 
+== Band Structure
+
+#grid(
+  columns: (1fr, 1fr),
+  [
+    #figure(
+      image("img/band_PBE.pdf", width: 100%),
+      caption: [Band structure — PBE ($E_g = 4.12$ eV)],
+    )
+  ],
+  [
+    #figure(
+      image("img/band_HSE06.pdf", width: 100%),
+      caption: [Band structure — HSE06 ($E_g = 5.34$ eV)],
+    )
+  ],
+)
+
+Both functionals predict an *indirect* gap from $Gamma$ to a point along
+$Gamma$–X. The valence band maximum is at $Gamma$ in both cases.
+PBE underestimates the gap by ~25%, while HSE06 recovers the experimental
+value within ~2%. The band dispersion is nearly identical — only the
+*energy scale* of the gap differs.
+
 == Band Gap Summary
 
 #figure(
@@ -411,11 +435,10 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 
 = Super Cells
 
-
 == NV Center — Supercell Convergence
 
 #figure(
-  image("img/formation_energy.png", width: 60%),
+  image("img/formation_energy.pdf", width: 64%),
   caption: [Formation energy vs supercell size — converges to 17.79 eV],
 )
 
@@ -441,27 +464,3 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 By 4×4×4 (512 atoms) the formation energy is within 10 meV of the isolated-defect
 limit. This is the practical converged supercell size for subsequent defect
 calculations.
-
-== Band Structure
-
-#grid(
-  columns: (1fr, 1fr),
-  [
-    #figure(
-      image("img/band_pbe.png", width: 100%),
-      caption: [Band structure — PBE ($E_g = 4.12$ eV)],
-    )
-  ],
-  [
-    #figure(
-      image("img/band_hse06.png", width: 100%),
-      caption: [Band structure — HSE06 ($E_g = 5.34$ eV)],
-    )
-  ],
-)
-
-Both functionals predict an *indirect* gap from $Gamma$ to a point along
-$Gamma$–X. The valence band maximum is at $Gamma$ in both cases.
-PBE underestimates the gap by ~25%, while HSE06 recovers the experimental
-value within ~2%. The band dispersion is nearly identical — only the
-*energy scale* of the gap differs.

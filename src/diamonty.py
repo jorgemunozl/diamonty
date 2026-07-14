@@ -16,6 +16,7 @@ from constants import (
     PBE_BAND,
     PBE_DOS_DIR,
     PBE_RELAX,
+    PLOTS_SLIDE,
     SUPERCELL_CONV,
     cutoff_dirs_pbe,
     kdensity_dirs_pbe,
@@ -225,18 +226,22 @@ class Diamonty:
         """
         Plot band structure along high-symmetry k-path.
 
-        Uses pymatgen's BSPlotter for k-path labels.
+        Uses pymatgen's BSPlotter for k-path labels, then
+        overrides font sizes for slide-friendly output.
         """
         plotter = BSPlotter(bs)
         plotter.get_plot(ylim=ylim)
         fig = plt.gcf()
-        fig.set_size_inches(6, 5)
+        fig.set_size_inches(6, 4.5)
         ax = plt.gca()
-        ax.set_title(
-            f"Band Structure — Diamond ({self.config.functional})", fontsize=12
-        )
-        fig.tight_layout()
-        plt.show()
+        ax.set_title("")
+        ax.set_xlabel("k-path", fontsize=10)
+        ax.set_ylabel("E − E_F (eV)", fontsize=10)
+        ax.tick_params(labelsize=8)
+        for label in ax.get_xticklabels():
+            label.set_fontsize(8)
+        fig.tight_layout(pad=0.5)
+        fig.savefig(f"slides/img/band_{self.config.functional.lower()}.pdf")
         return fig
 
     def formation_energy(self):
@@ -295,15 +300,20 @@ class Diamonty:
         ax.set_xlabel("Number of atoms", fontsize=11)
         ax.set_ylabel("Formation energy (eV)", fontsize=11)
         ax.set_title("NV Center Formation Energy — Supercell Convergence", fontsize=12)
-        ax.legend(fontsize=9)
+        ax.legend(fontsize=15)
         fig.tight_layout()
-        plt.show()
+        # plt.show()
+        plt.savefig(PLOTS_SLIDE / "formation_energy.pdf", format="pdf")
         return fig
 
 
 if __name__ == "__main__":
-    config = Config(functional="PBE")
+    config = Config(functional="HSE06")
     diamonty = Diamonty(config)
+
+    # Formation energy
+    # results = diamonty.formation_energy()
+    # diamonty.plot_formation_energy(results)
 
     # Band structure
     bs, gap = diamonty.band_structure()
