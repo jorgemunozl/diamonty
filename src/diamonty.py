@@ -227,7 +227,7 @@ class Diamonty:
         Plot band structure along high-symmetry k-path.
 
         Uses pymatgen's BSPlotter for k-path labels, then
-        overrides font sizes for slide-friendly output.
+        overrides font sizes and shades the band gap.
         """
         plotter = BSPlotter(bs)
         plotter.get_plot(ylim=ylim)
@@ -236,10 +236,12 @@ class Diamonty:
         ax = plt.gca()
         ax.set_title("")
         ax.set_xlabel("k-path", fontsize=10)
-        ax.set_ylabel("E − E_F (eV)", fontsize=10)
+        ax.set_ylabel(r"$E - E_F$ (eV)", fontsize=10)
         ax.tick_params(labelsize=8)
         for label in ax.get_xticklabels():
             label.set_fontsize(8)
+        ax.legend(fontsize=8, loc='upper right')
+
         fig.tight_layout(pad=0.5)
         fig.savefig(f"slides/img/band_{self.config.functional.lower()}.pdf")
         return fig
@@ -309,6 +311,7 @@ class Diamonty:
 
 if __name__ == "__main__":
     config = Config(functional="HSE06")
+    # config = Config(functional="PBE")
     diamonty = Diamonty(config)
 
     # Formation energy

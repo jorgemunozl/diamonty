@@ -401,13 +401,13 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   [
     #figure(
       image("img/band_PBE.pdf", width: 100%),
-      caption: [Band structure — PBE ($E_g = 4.12$ eV)],
+      caption: [PBE ($E_g = 4.12$ eV)],
     )
   ],
   [
     #figure(
       image("img/band_HSE06.pdf", width: 100%),
-      caption: [Band structure — HSE06 ($E_g = 5.34$ eV)],
+      caption: [HSE06 ($E_g = 5.34$ eV)],
     )
   ],
 )
