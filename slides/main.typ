@@ -53,7 +53,7 @@
 
 //#outline-slide()
 
-= Part One: Theoretical Background
+= Part One: Theoretical Background Needed
 
 == Many Electrons problem set up
 
@@ -219,7 +219,7 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 5. *Check Convergence*: If $||n_"out" - n_"in"|| < delta arrow.r$ done. Otherwise: mix $n_"in"$ and $n_"out"$, return to step 2.
 
 
-= How you are supposed to interpretate the data from the calculations (example)
+= Part Two: Primitive Cell Results
 
 == VASP workflow
 
@@ -227,7 +227,6 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   image("img/vasp_workflow.png", width: 40%),
   caption: "VASP workflow",
 )
-
 
 == Questions to answer
 
@@ -285,8 +284,6 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 #figure(
   image("img/unit_cell_band.png", width: 80%),
 )
-
-= Plotting of the data for Diamond
 
 == Energy Cutoff for the plane-wave basis and k mesh
 
@@ -382,17 +379,36 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   columns: (1fr, 1fr),
   [
     #figure(
-      image("img/dos_pbe.png", width: 100%),
+      image("img/dos_pbe.pdf", width: 100%),
       caption: [DOS (PBE)],
     )
   ],
   [
     #figure(
-      image("img/dos_hse06.png", width: 100%),
+      image("img/dos_hse06.pdf", width: 100%),
       caption: [DOS (HSE06)],
     )
   ],
 )
+
+== K paths - High Symmetry
+
+#grid(
+  columns: (1fr, 1fr),
+  [
+    #figure(
+      image("img/kpath.jpg", width: 130%),
+      caption: [K path (PBE)],
+    )
+  ],
+  [
+    #figure(
+      image("img/brillouin_fcc.jpg", width: 70%),
+      caption: [Defect levels (HSE06)],
+    )
+  ],
+)
+
 
 == Band Structure
 
@@ -412,28 +428,33 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   ],
 )
 
-Both functionals predict an *indirect* gap from $Gamma$ to a point along
-$Gamma$–X. The valence band maximum is at $Gamma$ in both cases.
-PBE underestimates the gap by ~25%, while HSE06 recovers the experimental
-value within ~2%. The band dispersion is nearly identical — only the
-*energy scale* of the gap differs.
+= Part Three: Point defects on the super cell
 
-== Band Gap Summary
+== Why we cant use primitive cells for point defects
 
-#figure(
-  comparison-table(
-    ([*Functional*], [*$E_g$ (eV)*], [*Experiment (eV)*], [*Deviation*]),
-    (
-      ([PBE], [4.16], [#exp-g], [#calc.round(dev(4.16, exp-g), digits: 1)\%]),
-      ([HSE06], [5.37], [#exp-g], [#calc.round(dev(5.37, exp-g), digits: 1)\%]),
-    ),
-  ),
-  caption: [Band gap from EIGENVAL eigenvalues],
+#grid(
+  columns: (1fr, 1fr),
+  [
+    #figure(
+      image("img/diamond_1.png", width: 80%),
+      caption: [Diamond conventional cell, *8 atoms*],
+    )
+  ],
+  [
+    #figure(
+      image("img/diamond_2.png", width: 80%),
+      caption: [Diamond primitive cell, *2 atoms*],
+    )
+  ],
 )
 
-// PBE underestimates the band gap by #calc.round(dev(4.16, exp-g), digits: 1)\% (the well-known GGA band gap problem), while HSE06 recovers the experimental value within #calc.round(dev(5.37, exp-g), digits: 1)\% thanks to the 25% exact Hartree-Fock exchange.
+== How obtain the energy for point defects
+i
+For the primitive cell, we calculate the energy in this way, directly because we were asumming that this.
 
-= Super Cells
+If we would had a supercell, we just would calcualte as, but when introducing a defect point, we have top recall what happens to
+
+$ E^(q=0)_("form")[D] = E^(q=0)_("def")[D] - E_("perf") - mu^"elemental"_(C) + mu^("elemental")_(N) $
 
 == NV Center — Supercell Convergence
 
@@ -456,7 +477,7 @@ value within ~2%. The band dispersion is nearly identical — only the
       ([6×6×6], [1728], [17.789], [1.8]),
       ([7×7×7], [2744], [17.790], [0.7]),
     ),
-    highlight: (3,),
+    highlight: (4,),
   ),
   caption: [Convergence to < 10 meV at 4×4×4 (512 atoms). Criterion: 10 meV.],
 )
@@ -464,3 +485,14 @@ value within ~2%. The band dispersion is nearly identical — only the
 By 4×4×4 (512 atoms) the formation energy is within 10 meV of the isolated-defect
 limit. This is the practical converged supercell size for subsequent defect
 calculations.
+
+== Defect Levels — NV Center
+
+#figure(
+  image("img/defect_levels.png", width: 30%),
+  caption: [Single-particle Kohn-Sham defect levels vs charge state],
+)
+
+Each column shows gap states for one charge state ($-3$ to $+2$).
+Filled circles = occupied, open triangles = empty, blue = spin-up,
+red = spin-down. VBM and CBM from the perfect 4×4×4 supercell.
