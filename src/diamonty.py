@@ -167,6 +167,25 @@ class Diamonty:
         fig.savefig(f"slides/img/dos_{self.config.functional.lower()}.pdf")
         return fig
 
+    def plot_ldos(self, cdos=None, xlim=(-20, 20)):
+        """Plot orbital-projected DOS (s, p, d) — saves to slides/img/."""
+        if cdos is None:
+            cdos = self.dos()
+
+        spd = cdos.get_element_spd_dos("C")
+        plotter = DosPlotter(zero_at_efermi=True)
+        plotter.add_dos_dict(spd)
+        plotter.get_plot(xlim=xlim)
+        fig = plt.gcf()
+        fig.set_size_inches(6, 4)
+        ax = plt.gca()
+        ax.set_title(f"LDOS — Diamond ({self.config.functional})", fontsize=11)
+        ax.tick_params(labelsize=8)
+        ax.legend(fontsize=8, loc="upper right")
+        fig.tight_layout(pad=0.5)
+        fig.savefig(f"slides/img/ldos_{self.config.functional.lower()}.pdf")
+        return fig
+
     def extract_lattice(self):
         """Extract lattice parameters from CONTCAR."""
         print(f"  Pseudo relaxation directory: {self.config.pseudo_relax_dir}")

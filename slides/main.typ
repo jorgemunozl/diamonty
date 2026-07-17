@@ -236,37 +236,6 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 
 3. What does diamond look like?  (Lattice parameters, Density of States, Band gap and band structure)
 
-== The data that we actually have
-
-#table(
-  columns: (1.6fr, 2.5fr, 2fr, 2fr),
-  inset: 6pt,
-  align: (left, left, left, left),
-  stroke: none,
-  fill: (x, y) => if y == 0 { rgb("#3b82f6").lighten(80%) } else if calc.odd(y) { rgb("#f1f5f9") },
-
-  table.header([*Study*], [*Folder / Type*], [*Parameters explored*], [*Key outputs*]),
-
-  [*Convergence (ENCUT)*],
-  [`convergence/cutoff/`],
-  [16 values: 200 to 950 eV (step 50)],
-  [OUTCAR, OSZICAR, E0 vs ENCUT],
-
-  [*Convergence (k-points)*], [`convergence/kdensity/`], [9 meshes: 3³ to 23³], [OUTCAR, OSZICAR, KPOINTS, E0 vs Nₖ],
-
-  [*PBE Relaxation*], [`PBE/relax/`], [ENCUT = 500 eV, 10³ mesh], [CONTCAR (lattice const.), OUTCAR],
-
-  [*PBE DOS + LDOS*], [`PBE/dos/`], [ENCUT = 500 eV, 10³ mesh], [DOSCAR (total DOS), PROCAR (orbital proj.)],
-
-  [*PBE Band Structure*], [`PBE/band/`], [ENCUT = 500 eV, 900 kpts, 8 bands], [EIGENVAL, PROCAR],
-
-  [*HSE06 Relaxation*], [`HSE06/relax/`], [ENCUT = 500 eV, 10³ mesh], [CONTCAR (lattice const.), OUTCAR],
-
-  [*HSE06 DOS + LDOS*], [`HSE06/dos/`], [ENCUT = 500 eV, 10³ mesh], [DOSCAR (total DOS), PROCAR (orbital proj.)],
-
-  [*HSE06 Band Structure*], [`HSE06/band/`], [ENCUT = 500 eV, 47 kpts, 24 bands], [EIGENVAL, PROCAR],
-)
-
 == Convergence of the energy from SCF (example)
 
 #figure(
@@ -391,6 +360,26 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
   ],
 )
 
+
+== Local Density of States (Orbital Projection)
+
+#grid(
+  columns: (1fr, 1fr),
+  [
+    #figure(
+      image("img/ldos_pbe.pdf", width: 100%),
+      caption: [LDOS — PBE],
+    )
+  ],
+  [
+    #figure(
+      image("img/ldos_hse06.pdf", width: 100%),
+      caption: [LDOS — HSE06],
+    )
+  ],
+)
+
+
 == K paths - High Symmetry
 
 #grid(
@@ -449,12 +438,16 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 )
 
 == How obtain the energy for point defects
-i
-For the primitive cell, we calculate the energy in this way, directly because we were asumming that this.
 
-If we would had a supercell, we just would calcualte as, but when introducing a defect point, we have top recall what happens to
+*How much energy does it cost to take a perfect diamond supercell and turn into a supercell containing a point *
 
-$ E^(q=0)_("form")[D] = E^(q=0)_("def")[D] - E_("perf") - mu^"elemental"_(C) + mu^("elemental")_(N) $
+$ E^(q=0)_("form")[D] = E^(q=0)_("def")[D] - E_("perf") - mu_(C) + mu_(N) $
+
+1. Total energy difference between the defective supercell and the pristine supercell.
+2. Energy to remove a carbon atom from the supercell, $mu_(C)=-9.092944955$, _depends on choice of reservoir and growth conditions_.
+3. Energy to add a nitrogen atom to the supercell, $mu_(N)=-8.32088119$
+
+Note: You actually should remove two carbon atoms.
 
 == NV Center — Supercell Convergence
 
@@ -477,22 +470,39 @@ $ E^(q=0)_("form")[D] = E^(q=0)_("def")[D] - E_("perf") - mu^"elemental"_(C) + m
       ([6×6×6], [1728], [17.789], [1.8]),
       ([7×7×7], [2744], [17.790], [0.7]),
     ),
-    highlight: (4,),
+    highlight: (3,),
   ),
-  caption: [Convergence to < 10 meV at 4×4×4 (512 atoms). Criterion: 10 meV.],
+  caption: [Convergence at 4×4×4 (512 atoms)],
 )
 
 By 4×4×4 (512 atoms) the formation energy is within 10 meV of the isolated-defect
 limit. This is the practical converged supercell size for subsequent defect
 calculations.
 
-== Defect Levels — NV Center
+// == Defect Levels — NV Center #figure( image("img/defect_levels.png", width: 30%), caption: [Single-particle Kohn-Sham defect levels vs charge state], ) Each column shows gap states for one charge state ($-3$ to $+2$). Filled circles = occupied, open triangles = empty, blue = spin-up, red = spin-down. VBM and CBM from the perfect 4×4×4 supercell.
 
-#figure(
-  image("img/defect_levels.png", width: 30%),
-  caption: [Single-particle Kohn-Sham defect levels vs charge state],
+== KS Eigenvalues — All Charge States
+
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  rows: (auto, auto, auto),
+  [
+    #figure(image("img/eigen_N_C-V_C_-3.pdf", width: 100%), caption: [q = −3])
+  ],
+  [
+    #figure(image("img/eigen_N_C-V_C_-2.pdf", width: 100%), caption: [q = −2])
+  ],
+  [
+    #figure(image("img/eigen_N_C-V_C_-1.pdf", width: 100%), caption: [q = −1])
+  ],
+
+  [
+    #figure(image("img/eigen_N_C-V_C_0.pdf", width: 100%), caption: [q = 0])
+  ],
+  [
+    #figure(image("img/eigen_N_C-V_C_1.pdf", width: 100%), caption: [q = +1])
+  ],
+  [
+    #figure(image("img/eigen_N_C-V_C_2.pdf", width: 100%), caption: [q = +2])
+  ],
 )
-
-Each column shows gap states for one charge state ($-3$ to $+2$).
-Filled circles = occupied, open triangles = empty, blue = spin-up,
-red = spin-down. VBM and CBM from the perfect 4×4×4 supercell.
