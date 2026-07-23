@@ -268,6 +268,153 @@ class Diamonty:
         fig.tight_layout(pad=0.5)
         fig.savefig(PLOTS_SLIDE / f"band_{self.config.functional}.pdf")
 
+    def formation_energy_diagram(self):
+        """
+        Compute and plot the thermodynamic formation energy diagram
+        for the NV center as a function of Fermi level.
+
+        E^f(q, E_F) = E_def(q) - E_perf - Σ n_i μ_i + q·(E_VBM + E_F) + E_corr(q)
+
+        For NV center: n_C = -1 (remove 1 C), n_N = +1 (add 1 N)
+        So: -n_C·μ_C - n_N·μ_N = +μ_C - μ_N
+        Actually: E_form = E_def - E_perf - (-1)*μ_C - (+1)*μ_N
+                   = E_def - E_perf + μ_C - μ_N
+        """
+        base = POINT_DEFECT
+        band_base = HSE06_BAND.parent.parent / "band"
+
+        # ── 1. VBM from HSE06 band structure ──
+        v_band = Vasprun(str(HSE06_BAND), parse_potcar_file=False)
+        all_e = np.array(list(v_band.eigenvalues.values()))
+        e_fermi_band = v_band.efermi
+        vbm = float(all_e[all_e < e_fermi_band].max())
+        cbm = float(all_e[all_e >= e_fermi_band].min())
+        band_gap = cbm - vbm
+        print(f"\n--- Formation Energy Diagram ---")
+        print(f"  VBM = {vbm:.4f} eV")
+        print(f"  CBM = {cbm:.4f} eV")
+        print(f"  Band gap = {band_gap:.4f} eV")
+
+        # ── 2. Chemical potentials ──
+        # μ_C from diamond (HSE06 relax): 2 atoms per primitive cell
+        e_diamond = -21.092411  # HSE06 relax final energy (eV)
+        n_c_diamond = 2
+        mu_C = e_diamond / n_c_diamond
+        print(f"  μ_C (diamond) = {mu_C:.6f} eV/atom")
+
+        # μ_N from N₂ molecule: 2 atoms
+        e_n2 = -20.479607  # final energy (eV)
+        n_n_n2 = 2
+        mu_N = e_n2 / n_n_n2
+        print(f"  μ_N (N₂) = {mu_N:.6f} eV/atom")
+
+        # ── 3. Defect energies ──
+        v_perf = Vasprun(str(base / "perfect" / "vasprun.xml"), parse_potcar_file=False)
+        e_perf = v_perf.final_energy
+        n_atoms = v_perf.final_structure.num_sites
+        print(f"  E_perf = {e_perf:.6f} eV  ({n_atoms} atoms)")
+
+        charge_map = {
+            -3: "N_C-V_C_-3",
+            -2: "N_C-V_C_-2",
+            -1: "N_C-V_C_-1",
+            0: "N_C-V_C_0",
+            1: "N_C-V_C_1",
+            2: "N_C-V_C_2",
+        }
+
+        # Energy corrections (meV -> eV)
+        corrections = {
+            -3: 2.906,
+            -2: 1.362,
+            -1: 0.388,
+            0: 0.0,
+            1: 0.173,
+            2: 0.799,
+        }
+
+        # For NV center: remove 1 C, add 1 N
+        # E_form = E_def - E_perf + μ_C - μ_N + q·(E_VBM + E_F) + E_corr
+        # The +μ_C - μ_N accounts for: -(-1)*μ_C - (+1)*μ_N = +μ_C - μ_N
+        # Wait, let me re-derive:
+        # E_form = E_def - E_perf - Σ n_i μ_i + q·(E_VBM + E_F) + E_corr
+        # n_C = -1 (removed), n_N = +1 (added)
+        # - Σ n_i μ_i = -[(-1)*μ_C + (+1)*μ_N] = μ_C - μ_N
+
+        e_form_const = mu_C - mu_N  # constant part from chemical potentials
+
+        print(
+            f"\n{'Charge':<8} {'E_def (eV)':<16} {'E_corr (eV)':<14} {'E_form(q,0)':<16}"
+        )
+        print("-" * 60)
+
+        e_defs = {}
+        e_form_q0 = {}
+        for q in sorted(charge_map.keys()):
+            folder = charge_map[q]
+            v = Vasprun(str(base / folder / "vasprun.xml"), parse_potcar_file=False)
+            e_def = v.final_energy
+            e_defs[q] = e_def
+
+            # Formation energy at E_F = 0 (i.e., at VBM)
+            e_form_0 = e_def - e_perf + e_form_const + q * vbm + corrections[q]
+            e_form_q0[q] = e_form_0
+
+            print(
+                f"  {q:+d}      {e_def:<16.6f} {corrections[q]:<14.3f} {e_form_0:<16.4f}"
+            )
+
+        # ── 4. Plot ──
+        fig, ax = plt.subplots(figsize=(8, 5.5))
+
+        e_f_grid = np.linspace(0, band_gap, 200)
+        colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
+
+        for i, q in enumerate(sorted(charge_map.keys())):
+            e_form = e_form_q0[q] + q * e_f_grid
+            label = f"q = {q:+d}"
+            lw = 2.5 if q == -1 else 1.5
+            ls = "--" if q == 0 else "-"
+            ax.plot(
+                e_f_grid,
+                e_form,
+                color=colors[i],
+                linewidth=lw,
+                linestyle=ls,
+                label=label,
+            )
+
+        # Find charge transition levels (where lines cross)
+        print(f"\n{'Transition':<15} {'E_F (eV)':<12} {'E_form (eV)'}")
+        print("-" * 45)
+        for i, q1 in enumerate(sorted(charge_map.keys())):
+            for q2 in sorted(charge_map.keys()):
+                if q2 <= q1:
+                    continue
+                # E_form(q1) = E_form(q2) at transition
+                # e_form_q0[q1] + q1*E_F = e_form_q0[q2] + q2*E_F
+                # E_F = (e_form_q0[q2] - e_form_q0[q1]) / (q1 - q2)
+                e_f_trans = (e_form_q0[q2] - e_form_q0[q1]) / (q1 - q2)
+                e_form_trans = e_form_q0[q1] + q1 * e_f_trans
+                if 0 <= e_f_trans <= band_gap:
+                    print(
+                        f"  {q1:+d}/{q2:+d}         {e_f_trans:<12.3f} {e_form_trans:<.3f}"
+                    )
+                    ax.axvline(x=e_f_trans, color="gray", linewidth=0.5, linestyle=":")
+                    ax.plot(e_f_trans, e_form_trans, "ko", markersize=4)
+
+        ax.set_xlabel("Fermi level E$_F$ \u2212 E$_\\mathrm{VBM}$ (eV)", fontsize=11)
+        ax.set_ylabel("Formation energy (eV)", fontsize=11)
+        ax.set_title("NV Center — Formation Energy Diagram", fontsize=12)
+        ax.legend(fontsize=9, loc="upper left", ncol=2)
+        ax.set_xlim(0, band_gap)
+        ax.set_ylim(bottom=min(e_form_q0.values()) - 1)
+
+        fig.tight_layout()
+        fig.savefig(PLOTS_SLIDE / "formation_energy_diagram.pdf")
+        print(f"\n  Saved {PLOTS_SLIDE / 'formation_energy_diagram.pdf'}")
+        return fig
+
     def defect_levels(self):
         """
         Extract single-particle defect levels for all charge states.
@@ -315,94 +462,74 @@ class Diamonty:
 
         return vbm, cbm, levels
 
-    def plot_defect_levels(self, vbm, cbm, levels):
+    def spin_states(self):
         """
-        Plot single-particle defect level diagram.
+        Extract total magnetization (magnetic moment) for each charge state
+        from OUTCAR files. This gives the spin state of the NV center.
+
+        Spin state = magnetization / 2  (since each unpaired electron contributes 1 μ_B)
         """
-        from matplotlib.lines import Line2D
+        base = POINT_DEFECT
 
-        fig, ax = plt.subplots(figsize=(8, 5))
-        gap = cbm - vbm
-
-        # Band edges
-        ax.axhline(y=0, color="black", linewidth=1.2)
-        ax.axhline(y=gap, color="black", linewidth=1.2)
-        ax.text(-3.4, -0.15, "VBM", fontsize=9, va="top")
-        ax.text(-3.4, gap + 0.1, "CBM", fontsize=9, va="bottom")
-
-        color_up = "steelblue"
-        color_dn = "crimson"
-
-        for q in sorted(levels.keys()):
-            for spin, states in levels[q].items():
-                is_up = spin == Spin.up
-                color = color_up if is_up else color_dn
-                x = q + (0.15 if is_up else -0.15)
-                for e_rel, occ in states:
-                    ax.plot(
-                        x,
-                        e_rel,
-                        "o" if occ else "^",
-                        color=color,
-                        markerfacecolor=color if occ else "none",
-                        markersize=8,
-                        markeredgewidth=1.2,
-                    )
-
-        ax.set_xticks(sorted(levels.keys()))
-        ax.set_xticklabels([f"{q:+d}" for q in sorted(levels.keys())], fontsize=10)
-        ax.set_xlabel("Charge state", fontsize=11)
-        ax.set_ylabel("E − VBM (eV)", fontsize=11)
-        ax.set_title("NV Center — Single-Particle Defect Levels", fontsize=12)
-        ax.set_ylim(-1, gap + 1)
-
-        legend = [
-            Line2D(
-                [0],
-                [0],
-                marker="o",
-                color="w",
-                markerfacecolor=color_up,
-                markersize=8,
-                label="↑ occupied",
-            ),
-            Line2D(
-                [0],
-                [0],
-                marker="^",
-                color="w",
-                markerfacecolor="none",
-                markeredgecolor=color_up,
-                markersize=8,
-                markeredgewidth=1.2,
-                label="↑ empty",
-            ),
-            Line2D(
-                [0],
-                [0],
-                marker="o",
-                color="w",
-                markerfacecolor=color_dn,
-                markersize=8,
-                label="↓ occupied",
-            ),
-            Line2D(
-                [0],
-                [0],
-                marker="^",
-                color="w",
-                markerfacecolor="none",
-                markeredgecolor=color_dn,
-                markersize=8,
-                markeredgewidth=1.2,
-                label="↓ empty",
-            ),
+        charge_order = [
+            ("perfect", "perfect"),
+            ("N_C-V_C_2", "+2"),
+            ("N_C-V_C_1", "+1"),
+            ("N_C-V_C_0", "0"),
+            ("N_C-V_C_-1", "-1"),
+            ("N_C-V_C_-2", "-2"),
+            ("N_C-V_C_-3", "-3"),
         ]
-        ax.legend(handles=legend, fontsize=7, loc="upper right", ncol=2)
+
+        print(
+            f"\n{'System':<12} {'Charge':<8} {'Magnet. (μB)':<14} {'Spin (S)':<10} {'Unpaired e⁻'}"
+        )
+        print("-" * 60)
+
+        results = {}
+        for folder, q_label in charge_order:
+            outcar = base / folder / "OUTCAR"
+            mag = None
+            with open(outcar) as f:
+                for line in f:
+                    if "number of electron" in line and "magnetization" in line:
+                        mag = float(line.split()[-1])
+            spin_s = round(mag / 2, 1) if mag is not None else "?"
+            unpaired = round(mag) if mag is not None else "?"
+            results[q_label] = mag
+            print(f"  {folder:<12} {q_label:<8} {mag:<14} {spin_s:<10} {unpaired}")
+
+        return results
+
+    def plot_spin_states(self, spin_data):
+        """Plot magnetization vs charge state."""
+        charges = [k for k in spin_data if k != "perfect"]
+        mags = [spin_data[c] for c in charges]
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        colors = ["steelblue" if m > 0 else "crimson" for m in mags]
+        bars = ax.bar(charges, mags, color=colors, edgecolor="black", linewidth=0.8)
+
+        for bar, mag in zip(bars, mags):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.05,
+                f"S = {mag / 2:.1f}",
+                ha="center",
+                va="bottom",
+                fontsize=10,
+            )
+
+        ax.set_xlabel("Charge state", fontsize=11)
+        ax.set_ylabel("Total magnetization (μ_B)", fontsize=11)
+        ax.set_title("NV Center — Spin States", fontsize=12)
+        ax.set_ylim(0, max(mags) + 0.5)
 
         fig.tight_layout()
-        fig.savefig("slides/img/defect_levels.png", dpi=150)
+        fig.savefig(PLOTS_SLIDE / "spin_states.pdf")
+        print(f"  Saved {PLOTS_SLIDE / 'spin_states.pdf'}")
         return fig
+
     def plot_defect_eigenvalues(self, charge_state="N_C-V_C_0", ylim=None):
         """
         LSPD-style eigenvalue plot for a single charge state at Gamma.
@@ -440,8 +567,16 @@ class Diamonty:
                     c, f = "crimson", "none"
                 else:
                     c, f = "green", "green"
-                ax.plot(0, e, "o", color=c, markerfacecolor=f,
-                        markersize=10, markeredgewidth=1.2, zorder=2)
+                ax.plot(
+                    0,
+                    e,
+                    "o",
+                    color=c,
+                    markerfacecolor=f,
+                    markersize=10,
+                    markeredgewidth=1.2,
+                    zorder=2,
+                )
 
             # VBM/CBM lines
             ax.axhline(y=perf_vbm, color="black", linewidth=0.8, linestyle="--")
@@ -453,7 +588,6 @@ class Diamonty:
         fig.tight_layout()
         fig.savefig(f"slides/img/eigen_{charge_state}.pdf")
         return fig
-
 
     def formation_energy(self):
         """
@@ -516,29 +650,3 @@ class Diamonty:
         # plt.show()
         plt.savefig(PLOTS_SLIDE / "formation_energy.pdf", format="pdf")
         return fig
-
-
-if __name__ == "__main__":
-    config = Config(functional="HSE06")
-    # config = Config(functional="PBE")
-    diamonty = Diamonty(config)
-
-    # Formation energy
-    # results = diamonty.formation_energy()
-    # diamonty.plot_formation_energy(results)
-
-    # Band structure
-    # bs, gap = diamonty.band_structure()
-    # diamonty.plot_band_structure(bs)
-
-    # Defect levels
-    # vbm, cbm, levels = diamonty.defect_levels()
-    # diamonty.plot_defect_levels(levels)
-
-    # DOS
-    dos = diamonty.dos()
-    diamonty.plot_dos(dos)
-
-    # LDOS
-    # ldos = diamonty.ldos()
-    # diamonty.plot_ldos(ldos)

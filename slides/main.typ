@@ -441,7 +441,7 @@ When running a SCF calculation, e.g. quantum espresso, what the SCF cycle does i
 
 *How much energy does it cost to take a perfect diamond supercell and turn into a supercell containing a point *
 
-$ E^(q=0)_("form")[D] = E^(q=0)_("def")[D] - E_("perf") - mu_(C) + mu_(N) $
+$ E^(q=0)_("form")[D] = E^(q=0)_("def")[D] - E_("perf") - 2 mu_(C) + mu_(N) $
 
 1. Total energy difference between the defective supercell and the pristine supercell.
 2. Energy to remove a carbon atom from the supercell, $mu_(C)=-9.092944955$, _depends on choice of reservoir and growth conditions_.
@@ -481,6 +481,29 @@ calculations.
 
 // == Defect Levels — NV Center #figure( image("img/defect_levels.png", width: 30%), caption: [Single-particle Kohn-Sham defect levels vs charge state], ) Each column shows gap states for one charge state ($-3$ to $+2$). Filled circles = occupied, open triangles = empty, blue = spin-up, red = spin-down. VBM and CBM from the perfect 4×4×4 supercell.
 
+
+== Defect Creation
+
+#figure(
+  image("img/diamond.webp", width: 110%),
+  caption: [asd],
+)
+
+== Defect Number of electrons
+
+#figure(
+  image("img/five_diamond.png", width: 40%),
+  caption: [In a neutral NV center, there are 5 free electrons],
+)
+
+== What we want?
+
+I don't know
+
+== Why KS eigenvalues are the answer
+
+Because yes asd
+
 == KS Eigenvalues — All Charge States
 
 #grid(
@@ -506,3 +529,68 @@ calculations.
     #figure(image("img/eigen_N_C-V_C_2.pdf", width: 100%), caption: [q = +2])
   ],
 )
+
+== Why the spin is important, because yes
+
+So yeah
+
+== Spin state for the NV center
+
+#figure(
+  image("img/spin_states.pdf", width: 60%),
+  caption: [Spin state of the NV center vs charge state],
+)
+
+
+== How on earth,
+
+== Master Equation
+
+#grid(
+  columns: (1fr, 1fr),
+  [
+    #text(size: 0.8em)[
+      For a defect with charge $q$, the _master equation_:
+
+      $
+        E^f(q, E_F) = E_(text("def"))(q) - E_(text("perf")) - sum n_i mu_i + q(E_(text("VBM")) + E_F) + E_(text("corr"))
+      $
+
+      - $n_i$ is negative when atoms are added and positive when atoms are removed
+      - $mu_i$ is the chemical potential of the $i$-th band
+      - $E_F$ is the Fermi level
+      - $E_(text("VBM"))$ is the valence band maximum energy
+      - $E_(text("corr"))$ is the correction energy.
+
+      Plot it when:
+
+      $ 0 <= E_F <= E_(text("g")) $
+
+      because
+    ]
+  ],
+  [
+    #figure(
+      image("img/folder-tree.png", width: 70%),
+      caption: [q = 0],
+    )
+  ],
+)
+
+
+== Master Equation for NV center on diamond
+
+$ E^f(q, E_F) = E_(text("def"))(q) - E_(text("perf")) - sum n_i mu_i + q(E_(text("VBM")) + E_F) + E_(text("corr")) $
+
+
+== Formation Energy Diagram
+
+#figure(
+  image("img/formation_energy_diagram.pdf", width: 60%),
+  caption: [Formation energy diagram],
+)
+
+== Optical Transitions
+
+When a defect is optical active?
+What being optical active means?
