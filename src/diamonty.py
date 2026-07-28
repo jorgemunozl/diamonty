@@ -295,18 +295,41 @@ class Diamonty:
         print(f"  CBM = {cbm:.4f} eV")
         print(f"  Band gap = {band_gap:.4f} eV")
 
-        # ── 2. Chemical potentials ──
-        # μ_C from diamond (HSE06 relax): 2 atoms per primitive cell
-        e_diamond = -21.092411  # HSE06 relax final energy (eV)
-        n_c_diamond = 2
-        mu_C = e_diamond / n_c_diamond
-        print(f"  μ_C (diamond) = {mu_C:.6f} eV/atom")
+        # ── 2. Chemical potentials from competing phases ──
+        # μ_C from diamond: use HSE06 relax from 4.Properties_of_Diamond
+        diamond_vasprun = (
+            BASE.parent
+            / "diamonty"
+            / "4.Properties_of_Diamond"
+            / "vasp"
+            / "HSE06"
+            / "relax"
+            / "vasprun.xml"
+        )
+        v_diamond = Vasprun(str(diamond_vasprun), parse_potcar_file=False)
+        e_diamond = v_diamond.final_energy
+        n_c = sum(1 for site in v_diamond.final_structure if site.species_string == "C")
+        mu_C = e_diamond / n_c
+        print(f"  μ_C (from diamond, {n_c} C atoms) = {mu_C:.6f} eV/atom")
 
-        # μ_N from N₂ molecule: 2 atoms
-        e_n2 = -20.479607  # final energy (eV)
-        n_n_n2 = 2
-        mu_N = e_n2 / n_n_n2
-        print(f"  μ_N (N₂) = {mu_N:.6f} eV/atom")
+        # μ_N from N₂ molecule (cpd folder in 6.Formation_Energy_Diagram)
+        n2_vasprun = (
+            BASE.parent
+            / "diamonty"
+            / "6.Formation_Energy_Diagram"
+            / "cpd"
+            / "mol_N2"
+            / "vasprun.xml"
+        )
+        v_n2 = Vasprun(str(n2_vasprun), parse_potcar_file=False)
+        e_n2 = v_n2.final_energy
+        n_n = sum(1 for site in v_n2.final_structure if site.species_string == "N")
+        mu_N = e_n2 / n_n
+        print(f"  μ_N (from N₂ molecule, {n_n} N atoms) = {mu_N:.6f} eV/atom")
+
+        # These are the C-rich (diamond) and N₂-rich chemical potentials.
+        # For a full stability diagram, you would also need the C-poor limit
+        # (μ_C from graphite or another carbon phase).
 
         # ── 3. Defect energies ──
         v_perf = Vasprun(str(base / "perfect" / "vasprun.xml"), parse_potcar_file=False)
@@ -341,7 +364,7 @@ class Diamonty:
         # n_C = -1 (removed), n_N = +1 (added)
         # - Σ n_i μ_i = -[(-1)*μ_C + (+1)*μ_N] = μ_C - μ_N
 
-        e_form_const = mu_C - mu_N  # constant part from chemical potentials
+        e_form_const = 2 * mu_C - mu_N  # constant part from chemical potentials
 
         print(
             f"\n{'Charge':<8} {'E_def (eV)':<16} {'E_corr (eV)':<14} {'E_form(q,0)':<16}"
@@ -403,7 +426,7 @@ class Diamonty:
                     ax.axvline(x=e_f_trans, color="gray", linewidth=0.5, linestyle=":")
                     ax.plot(e_f_trans, e_form_trans, "ko", markersize=4)
 
-        ax.set_xlabel("Fermi level E$_F$ \u2212 E$_\\mathrm{VBM}$ (eV)", fontsize=11)
+        ax.set_xlabel("Fermi level E$_F$ (eV)", fontsize=11)
         ax.set_ylabel("Formation energy (eV)", fontsize=11)
         ax.set_title("NV Center — Formation Energy Diagram", fontsize=12)
         ax.legend(fontsize=9, loc="upper left", ncol=2)
@@ -617,7 +640,7 @@ class Diamonty:
             n_atoms = v_perf.final_structure.num_sites
             e_def = v_def.final_energy
             e_perf = v_perf.final_energy
-            e_form = e_def - e_perf - MU_C + MU_N
+            e_form = e_def - e_perf - 2 * MU_C + MU_N
             de_str = (
                 f"{(e_form - prev_form) * 1000:.1f}" if prev_form is not None else "—"
             )

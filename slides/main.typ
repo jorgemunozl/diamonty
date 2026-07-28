@@ -486,7 +486,7 @@ calculations.
 
 #figure(
   image("img/diamond.webp", width: 110%),
-  caption: [asd],
+  caption: [How the NV center in diamond is formed],
 )
 
 == Defect Number of electrons
@@ -496,13 +496,50 @@ calculations.
   caption: [In a neutral NV center, there are 5 free electrons],
 )
 
-== What we want?
+== Diamond Structure
 
-I don't know
+#grid(
+  columns: (0.7fr, 1fr),
+  rows: (auto, auto),
+  [
+    From group theory , the NV center has three rotational symmetries.
+    - $a_1$ holds 2 electrons (lower energy, filled)
+    - $e$ holds 3 electrons (2 in one orbital, 1 in the other)
 
-== Why KS eigenvalues are the answer
+    Which gives you a doublet $(S=1/2)$
+  ],
+  [
+    #figure(
+      image("img/group.png", width: 100%),
+      caption: [NV center spin density],
+    )
+  ],
+)
 
-Because yes asd
+== Spin state for the NV center
+
+#figure(
+  image("img/spin_states.pdf", width: 60%),
+  caption: [Spin state of the NV center vs charge state],
+)
+
+== What we want? ODMR
+
+#grid(
+  columns: (1fr, 1fr),
+  rows: (auto, auto),
+  [
+    #figure(
+      image("img/odmr.jpg", width: 80%),
+      caption: [Green laser pumps into the NV center],
+    )
+  ],
+  [
+    We want to make NV center be used as a quantum sensor, instead of use superconduncting conductors or SQUID. For it we are going to use Optically Detected Magnetic Resonance.
+  ],
+)
+
+
 
 == KS Eigenvalues — All Charge States
 
@@ -529,20 +566,6 @@ Because yes asd
     #figure(image("img/eigen_N_C-V_C_2.pdf", width: 100%), caption: [q = +2])
   ],
 )
-
-== Why the spin is important, because yes
-
-So yeah
-
-== Spin state for the NV center
-
-#figure(
-  image("img/spin_states.pdf", width: 60%),
-  caption: [Spin state of the NV center vs charge state],
-)
-
-
-== How on earth,
 
 == Master Equation
 
@@ -576,12 +599,6 @@ So yeah
     )
   ],
 )
-
-
-== Master Equation for NV center on diamond
-
-$ E^f(q, E_F) = E_(text("def"))(q) - E_(text("perf")) - sum n_i mu_i + q(E_(text("VBM")) + E_F) + E_(text("corr")) $
-
 
 == Formation Energy Diagram
 

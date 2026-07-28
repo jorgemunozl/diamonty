@@ -40,8 +40,8 @@ def ldos():
 
 
 if __name__ == "__main__":
-    defect_levels()
-    # formation_energy()
+    # defect_levels()
+    formation_energy()
     # dos()
     # ldos()
     # spin_states()

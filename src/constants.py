@@ -30,9 +30,7 @@ SUPERCELL_CONV = (
 MU_C = -9.092944955  # elemental chemical potential, C
 MU_N = -8.320881190  # elemental chemical potential, N
 
-POINT_DEFECT = (
-    BASE.parent / "diamonty" / "5.Diagramas_Kohn-Sham" / "Point_defect"
-)
+POINT_DEFECT = BASE.parent / "diamonty" / "5.Diagramas_Kohn-Sham" / "Point_defect"
 
 # ── Experimental references ─────────────────────────────────
 # Diamond, cubic (Fd-3m), 2 atoms/primitive cell.
