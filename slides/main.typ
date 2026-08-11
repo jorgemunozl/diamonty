@@ -607,7 +607,104 @@ calculations.
   caption: [Formation energy diagram],
 )
 
-== Optical Transitions
+== Current setup
 
-When a defect is optical active?
-What being optical active means?
+
+#grid(
+  columns: (1fr, 0.6fr),
+  align: (left, center),
+  stroke: none,
+  [
+    The NV center has four dangling bonds ${C_1, C_2, C_3, N}$ , with this set and the *symmetry operations*,
+    we have a group, then with representation theory, we can obtain irreducible representations.
+
+    For the $N$ sitting on the $C_3$ rotation axis, we obtain a *1D irrep labeled as $a_1$*
+    For the three carbons we obtain a 2D irrep labeled as $e$ and other 1D irrep labeled as $a_1$
+
+    One $a_1$ contains one orbital and $e$ contains two.
+
+    Four orbitals in total.
+
+    One $a_1$ is always filled with two electrons. (Near the valence band)
+    The other $a_1$ sits in the gap as $e$.
+  ],
+  [
+    #figure(
+      image("img/nv_sym.jpg", width: 70%),
+      caption: [Symmetry group for the NV center],
+    )
+  ]
+)
+
+
+== Defect States
+
+
+#figure(
+  grid(
+    columns: (1fr, 0.6fr),
+    gutter: 1em,
+    [ #figure(image("img/group.png", width: 70%)) <img-left> ],
+    [
+      $""^3A_2$ is the label for the ground state, the superscript $3$ means the spin multiplicity. $2S+1$, $S=1$
+
+      $""^3E$ is the label for the excited state.
+    ]
+  ),
+  caption: [(a) The structure of NV-center in diamond; only first- and second- neighbor C (cyan spheres) and N (blue sphere) atoms to the vacant site are shown. The yellow and red lobes represent the dangling bonds forming the defect levels shown in this figure. (b) Schematic diagram of the defect states in the gap and their occupation in the 3 A2 (ground) and 3 E (excited) states. #footnote[Image taking from Gali, Adam & Simon, T & Lowther, J.. (2011). An ab initio study of local vibration modes of the nitrogen-vacancy center in diamond. New Journal of Physics. 13. 025016. 10.1088/1367-2630/13/2/025016. ]
+      ],
+)
+
+== How jump from an orbital to another?
+
+The NV center is *optically active.* because its ZPL lies on the in the visible spectrum.
+
+In the ZPL, the nuclei stay fixed during the transition → all the electronic energy gap goes into the photon.
+
+1. *It absorbs light*
+2. *It emits light* Fluorescence.
+3. *The process happens at a wavelength inside the visible spectrum*
+
+== Why on earth you would excite the NV center?
+
+
+1. *Initialize*: shine laser, after some exposure, m_s=0.
+2. *Manipulate*: apply microwave pulse(s) to do your quantum operation — rotate the spin into a superposition, or entangle it, etc.
+3. *Readout*: shine laser again, briefly, and count photons. Bright = ended in 0. Dim = ended in ±1 (or some probability-weighted mix, since it was in superposition — this is where you get your measurement statistics across many repeated runs).
+
+
+== Constrained Occupation DFT (ΔSCF)
+
+To compute the *optical transition*, we use *constrained-occupation DFT*:
+
+- Standard DFT only gives ground states
+- The ΔSCF method manually promotes one electron.
+- $E_"excited" - E_"ground"$ gives the transition energy
+
+#figure(
+  image("img/zpl.pdf", width: 55%),
+  caption: [NV⁻ optical transition — ΔSCF method],
+)
+
+== Results: Zero-Phonon Line
+
+#table(
+  columns: (auto, auto, auto),
+  inset: 6pt,
+  align: (left, center, center),
+  stroke: none,
+  fill: (x, y) => if y == 0 { rgb("#3b82f6").lighten(80%) } else if calc.odd(y) { rgb("#f1f5f9") },
+
+  table.header([*Property*], [*This work (HSE06)*], [*Experiment*]),
+
+  [$E_"ground"$ (eV)], [-2248.24], [—],
+  [$E_"excited"$ (eV)], [-2246.01], [—],
+  [*ZPL*], [*2.23 eV (557 nm)*], [*1.945 eV (637 nm)*],
+  [Deviation], [+281 meV], [—],
+)
+
+#v(0.5em)
+
+
+For quantum applications: the NV⁻ ZPL in the visible spectrum enables
+laser initialization and readout of the spin state — the foundation of ODMR.

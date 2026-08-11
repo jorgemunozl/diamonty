@@ -31,6 +31,7 @@ MU_C = -9.092944955  # elemental chemical potential, C
 MU_N = -8.320881190  # elemental chemical potential, N
 
 POINT_DEFECT = BASE.parent / "diamonty" / "5.Diagramas_Kohn-Sham" / "Point_defect"
+ZPL_EXCITED_DIR = BASE.parent / "diamonty" / "7.Optical_Transitions" / "ZPL" / "N_C-V_C_-1-excited"
 
 # ── Experimental references ─────────────────────────────────
 # Diamond, cubic (Fd-3m), 2 atoms/primitive cell.

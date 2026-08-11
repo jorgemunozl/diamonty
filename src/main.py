@@ -29,6 +29,11 @@ def defect_levels():
     diamonty.plot_defect_levels(vbm, cbm, levels)
 
 
+def zpl():
+    e_ground, e_excited, zpl = diamonty.zpl()
+    diamonty.plot_zpl(e_ground, e_excited, zpl)
+
+
 def dos():
     dos = diamonty.dos()
     diamonty.plot_dos(dos)
@@ -40,9 +45,4 @@ def ldos():
 
 
 if __name__ == "__main__":
-    # defect_levels()
-    formation_energy()
-    # dos()
-    # ldos()
-    # spin_states()
-    # formation_energy_diagram()
+    zpl()

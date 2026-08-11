@@ -19,6 +19,7 @@ from constants import (
     PBE_RELAX,
     PLOTS_SLIDE,
     POINT_DEFECT,
+    ZPL_EXCITED_DIR,
     SUPERCELL_CONV,
     cutoff_dirs_pbe,
     kdensity_dirs_pbe,
@@ -610,6 +611,108 @@ class Diamonty:
         fig.suptitle(f"NV Center — KS Eigenvalues ({charge_state})", fontsize=12)
         fig.tight_layout()
         fig.savefig(f"slides/img/eigen_{charge_state}.pdf")
+        return fig
+
+    def zpl(self):
+        """
+        Compute the Zero-Phonon Line (ZPL) for NV⁻ → NV⁻* optical transition.
+
+        ZPL = E_excited - E_ground
+
+        Uses constrained-occupation DFT (ΔSCF method):
+        - Ground state: NV⁻ from Point_defect
+        - Excited state: NV⁻* from 7.Optical_Transitions/ZPL/
+
+        The excited state promotes one electron from an occupied
+        defect level to a higher empty defect level (spin-down channel).
+        """
+        # ── Ground state: NV⁻ (q = -1) ──
+        v_ground = Vasprun(
+            str(POINT_DEFECT / "N_C-V_C_-1" / "vasprun.xml"),
+            parse_potcar_file=False,
+        )
+        e_ground = v_ground.final_energy
+        mag_ground = v_ground.final_structure.site_properties.get("magmom", [0])
+
+        # ── Excited state: NV⁻* ──
+        v_excited = Vasprun(
+            str(ZPL_EXCITED_DIR / "vasprun.xml"),
+            parse_potcar_file=False,
+        )
+        e_excited = v_excited.final_energy
+
+        zpl = e_excited - e_ground
+
+        # Also extract the KS eigenvalues to see which electron was promoted
+        perf = Vasprun(
+            str(POINT_DEFECT / "perfect" / "vasprun.xml"),
+            parse_potcar_file=False,
+        )
+        all_e = np.array(list(perf.eigenvalues.values()))
+        vbm = float(all_e[all_e < perf.efermi].max())
+
+        print(f"\n--- Zero-Phonon Line (ZPL) — NV⁻ Center ---")
+        print(f"  E_ground  = {e_ground:.4f} eV")
+        print(f"  E_excited = {e_excited:.4f} eV")
+        print(f"  ZPL       = {zpl:.4f} eV  ({1239.84 / zpl:.1f} nm)")
+        print(f"  Experiment = 1.945 eV (637 nm)")
+        print(f"  Deviation  = {(zpl - 1.945) * 1000:.0f} meV")
+
+        # Show gap states for both to identify the transition
+        print(f"\n{'State':<20} {'Spin':<10} {'E (eV)':<12} {'E - VBM':<12} {'Occ'}")
+        print("-" * 70)
+        for label, v in [("Ground (NV⁻)", v_ground), ("Excited (NV⁻*)", v_excited)]:
+            for spin, arr in v.eigenvalues.items():
+                flat_e = arr[:, :, 0].flatten()
+                flat_occ = arr[:, :, 1].flatten()
+                mask = (flat_e > vbm - 0.5) & (flat_e < vbm + 4.0)
+                for e, occ in zip(flat_e[mask], flat_occ[mask]):
+                    if 0.01 < occ < 0.99 or (vbm < e < vbm + 3.5):
+                        print(
+                            f"  {label:<20} {spin.name:<10} {e:<12.4f} {e - vbm:<12.4f} {occ:.2f}"
+                        )
+
+        return e_ground, e_excited, zpl
+
+    def plot_zpl(self, e_ground, e_excited, zpl):
+        """Plot energy level diagram for the optical transition."""
+        fig, ax = plt.subplots(figsize=(5, 4))
+
+        y_ground = 0
+        y_excited = zpl
+
+        # Ground state level
+        ax.barh(y_ground, 1, height=0.3, color="steelblue", label="NV⁻ (ground)")
+        # Excited state level
+        ax.barh(y_excited, 1, height=0.3, color="crimson", label="NV⁻* (excited)")
+
+        # Arrow
+        ax.annotate(
+            "",
+            xy=(0.5, y_excited - 0.15),
+            xytext=(0.5, y_ground + 0.15),
+            arrowprops=dict(arrowstyle="->", color="darkgreen", lw=2),
+        )
+        ax.text(
+            0.55,
+            (y_ground + y_excited) / 2,
+            f"ZPL = {zpl:.2f} eV\n({1239.84 / zpl:.0f} nm)",
+            fontsize=11,
+            color="darkgreen",
+            va="center",
+        )
+
+        ax.set_ylabel("Energy (eV)")
+        ax.set_title("NV⁻ Optical Transition — Zero-Phonon Line")
+        ax.set_yticks([y_ground, y_excited])
+        ax.set_yticklabels([f"{e_ground:.2f}", f"{e_excited:.2f}"])
+        ax.set_xticks([])
+        ax.legend(fontsize=9, loc="upper right")
+        ax.set_xlim(0, 1.0)
+
+        fig.tight_layout()
+        fig.savefig(PLOTS_SLIDE / "zpl.pdf")
+        print(f"  Saved {PLOTS_SLIDE / 'zpl.pdf'}")
         return fig
 
     def formation_energy(self):
