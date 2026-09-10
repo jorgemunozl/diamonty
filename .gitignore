@@ -6,6 +6,9 @@ dist/
 wheels/
 *.egg-info
 
+*.sozi.html
+*.sozi.json
+
 # Virtual environments
 .venv
 
