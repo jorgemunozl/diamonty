@@ -9,6 +9,7 @@ from pymatgen.electronic_structure.plotter import BSPlotter, DosPlotter
 from pymatgen.io.vasp.outputs import Vasprun
 
 from constants import (
+    BASE,
     HSE06_BAND,
     HSE06_DOS_DIR,
     HSE06_RELAX,
@@ -19,8 +20,8 @@ from constants import (
     PBE_RELAX,
     PLOTS_SLIDE,
     POINT_DEFECT,
-    ZPL_EXCITED_DIR,
     SUPERCELL_CONV,
+    ZPL_EXCITED_DIR,
     cutoff_dirs_pbe,
     kdensity_dirs_pbe,
 )
@@ -432,7 +433,7 @@ class Diamonty:
         ax.set_title("NV Center — Formation Energy Diagram", fontsize=12)
         ax.legend(fontsize=9, loc="upper left", ncol=2)
         ax.set_xlim(0, band_gap)
-        ax.set_ylim(bottom=min(e_form_q0.values()) - 1)
+        ax.set_ylim(bottom=min(e_form_q0.values()) - 1, top=12.5)
 
         fig.tight_layout()
         fig.savefig(PLOTS_SLIDE / "formation_energy_diagram.pdf")
