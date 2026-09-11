@@ -45,4 +45,4 @@ def ldos():
 
 
 if __name__ == "__main__":
-    formation_energy_diagram()
+    defect_levels()

@@ -575,9 +575,7 @@ calculations.
     #text(size: 0.8em)[
       For a defect with charge $q$, the _master equation_:
 
-      $
-        E^f(q, E_F) = E_(text("def"))(q) - E_(text("perf")) - sum n_i mu_i + q(E_(text("VBM")) + E_F) + E_(text("corr"))
-      $
+      $ E^f(q, E_F) = E_(text("def"))(q) - E_(text("perf")) - sum n_i mu_i + q(E_(text("VBM")) + E_F) + E_(text("corr")) $
 
       - $n_i$ is negative when atoms are added and positive when atoms are removed
       - $mu_i$ is the chemical potential of the $i$-th band

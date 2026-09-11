@@ -430,10 +430,10 @@ class Diamonty:
 
         ax.set_xlabel("Fermi level E$_F$ (eV)", fontsize=11)
         ax.set_ylabel("Formation energy (eV)", fontsize=11)
-        ax.set_title("NV Center — Formation Energy Diagram", fontsize=12)
+        ax.set_title("NV Center — Formation Energy Diagram", fontsize=7)
         ax.legend(fontsize=9, loc="upper left", ncol=2)
         ax.set_xlim(0, band_gap)
-        ax.set_ylim(bottom=min(e_form_q0.values()) - 1, top=12.5)
+        ax.set_ylim(bottom=min(e_form_q0.values()) - 1, top=8.4)
 
         fig.tight_layout()
         fig.savefig(PLOTS_SLIDE / "formation_energy_diagram.pdf")
